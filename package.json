@@ -1,0 +1,148 @@
+{
+  "name": "ai-git-commit",
+  "displayName": "AI Git Commit",
+  "description": "智能生成 Git 提交信息的 VSCode 插件，支持多种 AI 服务",
+  "version": "1.0.0",
+  "publisher": "your-publisher-name",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "SCM Providers",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "git",
+    "commit",
+    "AI",
+    "intelligent",
+    "message"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiGitCommit.generate",
+        "title": "AI: 生成 Commit 信息",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "aiGitCommit.settings",
+        "title": "AI: 打开设置"
+      }
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "when": "scmProvider == git",
+          "command": "aiGitCommit.generate",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AI Git Commit",
+      "properties": {
+        "aiGitCommit.provider": {
+          "type": "string",
+          "default": "openai",
+          "description": "AI 服务提供商 (openai/anthropic/deepseek/ollama)",
+          "enum": [
+            "openai",
+            "anthropic",
+            "deepseek",
+            "ollama"
+          ]
+        },
+        "aiGitCommit.openai.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI API Key"
+        },
+        "aiGitCommit.openai.model": {
+          "type": "string",
+          "default": "gpt-4o-mini",
+          "description": "OpenAI 模型名称"
+        },
+        "aiGitCommit.openai.baseUrl": {
+          "type": "string",
+          "default": "https://api.openai.com/v1",
+          "description": "OpenAI API 基础 URL"
+        },
+        "aiGitCommit.anthropic.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Anthropic API Key"
+        },
+        "aiGitCommit.anthropic.model": {
+          "type": "string",
+          "default": "claude-sonnet-4-20250514",
+          "description": "Anthropic 模型名称"
+        },
+        "aiGitCommit.deepseek.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "DeepSeek API Key"
+        },
+        "aiGitCommit.deepseek.model": {
+          "type": "string",
+          "default": "deepseek-chat",
+          "description": "DeepSeek 模型名称"
+        },
+        "aiGitCommit.ollama.baseUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama 服务地址"
+        },
+        "aiGitCommit.ollama.model": {
+          "type": "string",
+          "default": "qwen2.5:7b",
+          "description": "Ollama 模型名称"
+        },
+        "aiGitCommit.language": {
+          "type": "string",
+          "default": "zh-CN",
+          "description": "生成的 commit 信息语言 (zh-CN/en/ja)",
+          "enum": [
+            "zh-CN",
+            "en",
+            "ja"
+          ]
+        },
+        "aiGitCommit.style": {
+          "type": "string",
+          "default": "conventional",
+          "description": "Commit 信息风格 (conventional/emoji/plain)",
+          "enum": [
+            "conventional",
+            "emoji",
+            "plain"
+          ]
+        },
+        "aiGitCommit.maxTokens": {
+          "type": "number",
+          "default": 200,
+          "description": "生成 commit 信息的最大 token 数"
+        },
+        "aiGitCommit.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "description": "AI 生成温度 (0-1)，越低越确定"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "preview": "node ./test/runExtension.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  }
+}
