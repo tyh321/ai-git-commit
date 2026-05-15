@@ -33,7 +33,10 @@
       {
         "command": "aiGitCommit.generate",
         "title": "AI: 生成 Commit 信息",
-        "icon": "$(sparkle)"
+        "icon": {
+          "light": "assets/icon.svg",
+          "dark": "assets/icon.svg"
+        }
       },
       {
         "command": "aiGitCommit.settings",

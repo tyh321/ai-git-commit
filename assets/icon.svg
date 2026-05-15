@@ -1,0 +1,102 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 背景渐变 -->
+    <linearGradient id="bg" x1="0" y1="0" x2="128" y2="128">
+      <stop offset="0%" stop-color="#050816"/>
+      <stop offset="100%" stop-color="#071B5A"/>
+    </linearGradient>
+
+    <!-- AI 渐变 -->
+    <linearGradient id="aiGradient" x1="28" y1="18" x2="88" y2="78">
+      <stop offset="0%" stop-color="#47E6FF"/>
+      <stop offset="100%" stop-color="#8B5CFF"/>
+    </linearGradient>
+
+    <!-- 线路渐变 -->
+    <linearGradient id="lineGradient" x1="20" y1="80" x2="108" y2="80">
+      <stop offset="0%" stop-color="#48E0A4"/>
+      <stop offset="100%" stop-color="#39D3B0"/>
+    </linearGradient>
+
+    <!-- commit 按钮 -->
+    <linearGradient id="commitBg" x1="20" y1="92" x2="108" y2="108">
+      <stop offset="0%" stop-color="#1F2C4A"/>
+      <stop offset="100%" stop-color="#243659"/>
+    </linearGradient>
+
+    <!-- 发光 -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect x="2" y="2" width="124" height="124" rx="24" fill="url(#bg)" stroke="#16214A" stroke-width="2"/>
+
+  <!-- AI -->
+  <g filter="url(#glow)">
+    <!-- A -->
+    <path d="M32 72L52 24H68L88 72H74L68 58H52L46 72H32ZM56 48H64L60 36L56 48Z"
+          fill="url(#aiGradient)"/>
+
+    <!-- I -->
+    <rect x="92" y="24" width="12" height="48" rx="6" fill="url(#aiGradient)"/>
+  </g>
+
+  <!-- 星星 -->
+  <path d="M104 18L106 24L112 26L106 28L104 34L102 28L96 26L102 24L104 18Z"
+        fill="#C78CFF"/>
+  <path d="M92 34L93.5 38L98 39.5L93.5 41L92 45L90.5 41L86 39.5L90.5 38L92 34Z"
+        fill="#6C7BFF"/>
+
+  <!-- Git 流程线 -->
+  <g stroke="url(#lineGradient)" stroke-width="6" stroke-linecap="round">
+    <line x1="28" y1="84" x2="100" y2="84"/>
+  </g>
+
+  <!-- 节点 -->
+  <circle cx="28" cy="84" r="8" fill="#4AE0A7"/>
+  <circle cx="64" cy="84" r="10" fill="#4AE0A7"/>
+  <circle cx="100" cy="84" r="8" fill="#4AE0A7"/>
+
+  <circle cx="28" cy="84" r="3.5" fill="white"/>
+  <circle cx="64" cy="84" r="4" fill="white"/>
+  <circle cx="100" cy="84" r="3.5" fill="white"/>
+
+  <!-- commit 标签 -->
+  <rect x="18" y="96" width="92" height="18" rx="9"
+        fill="url(#commitBg)"
+        stroke="#31456D"
+        stroke-width="1"/>
+
+  <!-- code icon -->
+  <path d="M34 101L29 105L34 109"
+        stroke="#45E0A5"
+        stroke-width="2.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <path d="M42 101L37 109"
+        stroke="#45E0A5"
+        stroke-width="2.8"
+        stroke-linecap="round"/>
+
+  <path d="M46 101L51 105L46 109"
+        stroke="#45E0A5"
+        stroke-width="2.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- 文字 -->
+  <text x="58" y="108"
+        font-family="Inter, SF Pro Display, Arial"
+        font-size="9"
+        fill="white"
+        font-weight="500">
+    git commit
+  </text>
+</svg>

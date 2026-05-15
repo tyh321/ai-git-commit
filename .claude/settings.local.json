@@ -12,7 +12,8 @@
       "Bash(npx *)",
       "Bash(rm -rf /Users/tyh/.npm/_cacache/content-v2/sha512/31/63/)",
       "Bash(npm cache *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(qlmanage -t -s 1024 -o /Users/tyh/Documents/project/ai-git-commit/assets /Users/tyh/Documents/project/ai-git-commit/assets/icon.svg)"
     ]
   }
 }
