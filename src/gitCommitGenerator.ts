@@ -9,26 +9,21 @@ export interface AIProviderConfig {
 }
 
 export class GitCommitGenerator {
-    private context: vscode.ExtensionContext;
-
-    constructor(context: vscode.ExtensionContext) {
-        this.context = context;
-    }
+    constructor() {}
 
     /**
      * 获取当前 git diff 内容
      */
-    async getDiff(): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const { exec } = require('child_process');
-            exec('git diff --cached --no-color', { cwd: vscode.workspace.rootPath }, (error: any, stdout: string, stderr: string) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-                resolve(stdout);
-            });
-        });
+    async getDiff(repo: any): Promise<string> {
+        try {
+            const diff = await repo.diff(true);
+            if (diff && diff.trim().length > 0) {
+                return diff;
+            }
+            return await repo.diff(false);
+        } catch {
+            throw new Error('无法获取 git diff 信息');
+        }
     }
 
     /**
