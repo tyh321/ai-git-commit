@@ -5,7 +5,14 @@
       "Skill(superpowers:writing-plans)",
       "Skill(superpowers:subagent-driven-development)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(npx *)",
+      "Bash(rm -rf /Users/tyh/.npm/_cacache/content-v2/sha512/31/63/)",
+      "Bash(npm cache *)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

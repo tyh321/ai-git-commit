@@ -3,7 +3,11 @@
   "displayName": "AI Git Commit",
   "description": "智能生成 Git 提交信息的 VSCode 插件，支持多种 AI 服务",
   "version": "1.0.0",
-  "publisher": "your-publisher-name",
+  "publisher": "ai-git-commit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tianyuhang/ai-git-commit"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -19,8 +23,11 @@
     "intelligent",
     "message"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onView:scm"
+  ],
   "main": "./out/extension.js",
+  "icon": "assets/icon.png",
   "contributes": {
     "commands": [
       {
@@ -47,13 +54,14 @@
       "properties": {
         "aiGitCommit.provider": {
           "type": "string",
-          "default": "openai",
-          "description": "AI 服务提供商 (openai/anthropic/deepseek/ollama)",
+          "default": "volcengine",
+          "description": "AI 服务提供商 (openai/anthropic/deepseek/ollama/volcengine)",
           "enum": [
             "openai",
             "anthropic",
             "deepseek",
-            "ollama"
+            "ollama",
+            "volcengine"
           ]
         },
         "aiGitCommit.openai.apiKey": {
@@ -101,6 +109,21 @@
           "default": "qwen2.5:7b",
           "description": "Ollama 模型名称"
         },
+        "aiGitCommit.volcengine.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "火山方舟 API Key"
+        },
+        "aiGitCommit.volcengine.model": {
+          "type": "string",
+          "default": "deepseek-v3-2-251201",
+          "description": "火山方舟 模型 endpoint ID"
+        },
+        "aiGitCommit.volcengine.baseUrl": {
+          "type": "string",
+          "default": "https://ark.cn-beijing.volces.com/api/v3",
+          "description": "火山方舟 API 基础 URL"
+        },
         "aiGitCommit.language": {
           "type": "string",
           "default": "zh-CN",
@@ -113,7 +136,7 @@
         },
         "aiGitCommit.style": {
           "type": "string",
-          "default": "conventional",
+          "default": "emoji",
           "description": "Commit 信息风格 (conventional/emoji/plain)",
           "enum": [
             "conventional",
@@ -130,15 +153,19 @@
           "type": "number",
           "default": 0.7,
           "description": "AI 生成温度 (0-1)，越低越确定"
+        },
+        "aiGitCommit.autoStage": {
+          "type": "boolean",
+          "default": false,
+          "description": "自动暂存所有未暂存的文件"
         }
       }
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "package": "npm run compile && npx @vscode/vsce package",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "preview": "node ./test/runExtension.js"
+    "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

@@ -6,7 +6,7 @@ let generator: GitCommitGenerator;
 export function activate(context: vscode.ExtensionContext) {
     generator = new GitCommitGenerator();
 
-    const generateCommand = vscode.commands.registerCommand('aiGitCommit.generate', async () => {
+    const generateCommand = vscode.commands.registerCommand('aiGitCommit.generate', async (...args: any[]) => {
         const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
         if (!gitExtension) {
             vscode.window.showErrorMessage('请先安装并启用 VSCode 的 Git 扩展');
@@ -14,11 +14,20 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const git = gitExtension.getAPI(1);
-        const repo = git.repositories[0];
 
-        if (!repo) {
+        if (!git.repositories || git.repositories.length === 0) {
             vscode.window.showErrorMessage('当前工作区不是 Git 仓库');
             return;
+        }
+
+        // scm/title 菜单点击时，第一个参数是 SourceControl 对象
+        let repo = git.repositories[0];
+        if (args[0]?.rootUri) {
+            const clickedPath = args[0].rootUri.fsPath;
+            const matched = git.repositories.find((r: any) => r.rootUri.fsPath === clickedPath);
+            if (matched) {
+                repo = matched;
+            }
         }
 
         const stagedChanges = repo.state.indexChanges.length;
@@ -29,17 +38,12 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        if (unstagedChanges > 0 && stagedChanges === 0) {
-            const action = await vscode.window.showWarningMessage(
-                `检测到 ${unstagedChanges} 个未暂存的文件，暂存后再生成？`,
-                '暂存全部',
-                '取消'
-            );
-            if (action === '暂存全部') {
-                await vscode.commands.executeCommand('git.stageAll');
-            } else {
-                return;
-            }
+        const config = vscode.workspace.getConfiguration('aiGitCommit');
+        const autoStage = config.get<boolean>('autoStage', true);
+
+        if (unstagedChanges > 0 && autoStage) {
+            await vscode.commands.executeCommand('git.stageAll');
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
 
         await vscode.window.withProgress(

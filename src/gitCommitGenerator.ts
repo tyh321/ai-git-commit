@@ -34,7 +34,7 @@ export class GitCommitGenerator {
         return {
             provider: config.get<string>('provider', 'openai'),
             language: config.get<string>('language', 'zh-CN'),
-            style: config.get<string>('style', 'conventional'),
+            style: config.get<string>('style', 'emoji'),
             maxTokens: config.get<number>('maxTokens', 200),
             temperature: config.get<number>('temperature', 0.7)
         };
@@ -70,6 +70,12 @@ export class GitCommitGenerator {
                     model: config.get<string>('model', 'qwen2.5:7b'),
                     baseUrl: config.get<string>('baseUrl', 'http://localhost:11434')
                 };
+            case 'volcengine':
+                return {
+                    apiKey: config.get<string>('apiKey', ''),
+                    model: config.get<string>('model', 'deepseek-v3-2-251201'),
+                    baseUrl: config.get<string>('baseUrl', 'https://ark.cn-beijing.volces.com/api/v3')
+                };
             default:
                 throw new Error(`不支持的 AI 提供商: ${provider}`);
         }
@@ -80,8 +86,7 @@ export class GitCommitGenerator {
      */
     private buildSystemPrompt(language: string, style: string): string {
         const styleInstructions: Record<string, string> = {
-            conventional: `请按照 Conventional Commits 规范生成 commit 信息。
-格式：type(scope): description
+            conventional: `第一行格式：type: 简短摘要（不超过 72 个字符）
 
 可选的 type：
 - feat: 新功能
@@ -91,11 +96,9 @@ export class GitCommitGenerator {
 - refactor: 重构
 - perf: 性能优化
 - test: 测试相关
-- chore: 构建/工具辅助
+- chore: 构建/工具辅助`,
 
-示例：feat(auth): 添加 OAuth2 登录支持`,
-
-            emoji: `请在 commit 信息开头添加相关的 emoji 表情。
+            emoji: `第一行格式：emoji type: 简短摘要（不超过 72 个字符）
 
 常用 emoji 对照：
 - ✨ feat: 新功能
@@ -105,11 +108,9 @@ export class GitCommitGenerator {
 - ♻️ refactor: 重构
 - ⚡ perf: 性能优化
 - ✅ test: 测试
-- 🔨 chore: 构建/工具
+- 🔨 chore: 构建/工具`,
 
-示例：✨ feat(auth): 添加 OAuth2 登录支持`,
-
-            plain: `请生成简洁明了的中文 commit 信息，直接描述变更内容即可。`
+            plain: `第一行：简短摘要（不超过 72 个字符）`
         };
 
         const languageInstructions: Record<string, string> = {
@@ -120,15 +121,34 @@ export class GitCommitGenerator {
 
         return `你是一个专业的 Git commit 信息生成助手。根据提供的 git diff 内容，生成准确、简洁的 commit 信息。
 
+输出格式严格如下：
+
+第一行：简短总结本次变更的目的
+（空一行）
+1. 具体变更点1
+2. 具体变更点2
+3. 具体变更点3
+
+示例：
+
+feat: 新增火山方舟AI支持，优化插件配置与使用体验
+
+1. 新增火山方舟AI提供商支持，配置默认使用该服务
+2. 完善VSCode调试配置，添加默认构建任务
+3. 优化SCM面板适配，支持多仓库选择
+4. 新增自动暂存配置项，改进未暂存文件处理逻辑
+5. 更新文档与配置项，添加LICENSE与图标资源
+6. 重构package.json完善仓库信息与打包脚本
+
 ${styleInstructions[style] || styleInstructions.conventional}
 
 ${languageInstructions[language] || ''}
 
 重要规则：
 1. 仔细分析所有代码变更，理解其目的和影响范围
-2. 生成的信息要准确反映实际变更内容
-3. 使用简洁的语言描述变更
-4. 如果有多个不相关的变更，分别生成多条 commit 信息
+2. 第一行是整体变更的概括总结
+3. 每个变更点用数字序号 "1. 2. 3. " 开头，准确描述具体改动
+4. 只输出 commit 信息本身，不要输出任何其他内容
 5. 每行不超过 72 个字符`;
     }
 
@@ -157,6 +177,7 @@ ${languageInstructions[language] || ''}
                 case 'openai':
                 case 'deepseek':
                 case 'ollama':
+                case 'volcengine':
                     response = await this.callOpenAICompatible(
                         providerConfig,
                         systemPrompt,
@@ -180,6 +201,8 @@ ${languageInstructions[language] || ''}
                     throw new Error(`不支持的 AI 提供商: ${config.provider}`);
             }
 
+            console.log(response);
+            
             return this.parseResponse(response.join('\n'), config.style);
 
         } catch (error: any) {
@@ -354,38 +377,10 @@ ${languageInstructions[language] || ''}
      * 解析 AI 返回的结果
      */
     private parseResponse(response: string, style: string): string[] {
-        // 尝试解析多条消息（按换行或数字列表分隔）
-        let messages: string[] = [];
-
-        // 清理响应文本
         const cleaned = response
-            .replace(/```[\s\S]*?```/g, '') // 移除代码块
+            .replace(/```[\s\S]*?```/g, '')
             .trim();
 
-        // 尝试按数字列表分割 (1. xxx, 2. xxx)
-        const numberedMatches = cleaned.match(/^\d+[\.\、]\s*.+$/gm);
-        if (numberedMatches && numberedMatches.length > 1) {
-            messages = numberedMatches.map(m => m.replace(/^\d+[\.\、]\s*/, '').trim());
-        }
-        // 尝试按短横线列表分割 (- xxx)
-        else if (cleaned.includes('\n-')) {
-            messages = cleaned.split('\n-')
-                .map(s => s.trim())
-                .filter(s => s.length > 0)
-                .map(s => s.replace(/^[-*•]\s*/, ''));
-        }
-        // 单条消息
-        else {
-            // 按双换行分割可能的多条消息
-            messages = cleaned.split(/\n\n+/)
-                .map(s => s.trim())
-                .filter(s => s.length > 5); // 过滤太短的
-        }
-
-        // 确保每条消息格式正确
-        messages = messages.map(msg => msg.replace(/^["']|["']$/g, '')).filter(m => m.length > 0);
-
-        // 限制最多返回 5 条建议
-        return messages.slice(0, 5);
+        return [cleaned];
     }
 }
