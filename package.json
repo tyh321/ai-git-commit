@@ -2,7 +2,7 @@
   "name": "ai-git-commit",
   "displayName": "AI Git Commit",
   "description": "智能生成 Git 提交信息的 VSCode 插件，支持多种 AI 服务",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "publisher": "ai-git-commit",
   "repository": {
     "type": "git",
@@ -31,9 +31,9 @@
   "contributes": {
     "commands": [
       {
-      "command": "aiGitCommit.generate",
-      "title": "AI: 生成 Commit 信息",
-      "icon": "$(sparkle)"
+        "command": "aiGitCommit.generate",
+        "title": "AI: 生成 Commit 信息",
+        "icon": "$(sparkle)"
       },
       {
         "command": "aiGitCommit.settings",
@@ -146,7 +146,7 @@
         },
         "aiGitCommit.maxTokens": {
           "type": "number",
-          "default": 200,
+          "default": 500,
           "description": "生成 commit 信息的最大 token 数"
         },
         "aiGitCommit.temperature": {
@@ -163,7 +163,7 @@
     }
   },
   "scripts": {
-    "package": "npm run compile && npx @vscode/vsce package",
+    "package": "npm version patch --no-git-tag-version && npm run compile && npx @vscode/vsce package",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./"
   },

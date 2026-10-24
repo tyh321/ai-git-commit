@@ -35,7 +35,7 @@ export class GitCommitGenerator {
             provider: config.get<string>('provider', 'openai'),
             language: config.get<string>('language', 'zh-CN'),
             style: config.get<string>('style', 'emoji'),
-            maxTokens: config.get<number>('maxTokens', 200),
+            maxTokens: config.get<number>('maxTokens', 500),
             temperature: config.get<number>('temperature', 0.7)
         };
     }
@@ -223,7 +223,10 @@ ${languageInstructions[language] || ''}
         token?: vscode.CancellationToken
     ): Promise<string[]> {
         const isOllama = config.baseUrl.includes('localhost') || config.baseUrl.includes('127.0.0.1');
-        
+        // 火山方舟的豆包 Seed 2.x 系列默认开启思考模式：会先生成大量 reasoning tokens，
+        // 既显著拖慢响应，又挤占 max_tokens 预算导致 commit 信息被截断，这里显式关闭
+        const isVolcengine = config.baseUrl.includes('volces.com');
+
         const body = JSON.stringify({
             model: config.model,
             messages: [
@@ -232,6 +235,7 @@ ${languageInstructions[language] || ''}
             ],
             max_tokens: maxTokens,
             temperature: temperature,
+            ...(isVolcengine ? { thinking: { type: 'disabled' } } : {}),
             stream: false
         });
 
@@ -378,7 +382,9 @@ ${languageInstructions[language] || ''}
      */
     private parseResponse(response: string, style: string): string[] {
         const cleaned = response
-            .replace(/```[\s\S]*?```/g, '')
+            // 只剥离首尾的 ``` 代码块包裹，保留块内内容（旧实现会把整段内容删光）
+            .replace(/^\s*```[a-zA-Z]*\s*\n?/, '')
+            .replace(/\n?\s*```\s*$/, '')
             .trim();
 
         return [cleaned];
