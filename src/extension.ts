@@ -39,11 +39,26 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const config = vscode.workspace.getConfiguration('aiGitCommit');
-        const autoStage = config.get<boolean>('autoStage', true);
+        const autoStage = config.get<boolean>('autoStage', false);
 
         if (unstagedChanges > 0 && autoStage) {
-            await vscode.commands.executeCommand('git.stageAll');
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // 监听仓库状态刷新事件来决定何时取 diff，替代原来的固定 500ms 盲等；
+            // 2s 兜底防止状态不刷新时卡住
+            await new Promise<void>(resolve => {
+                let finished = false;
+                let disposable: { dispose(): void } | undefined;
+                let timer: ReturnType<typeof setTimeout> | undefined;
+                const finish = () => {
+                    if (finished) { return; }
+                    finished = true;
+                    if (timer) { clearTimeout(timer); }
+                    disposable?.dispose();
+                    resolve();
+                };
+                timer = setTimeout(finish, 2000);
+                disposable = repo.onDidChange(() => finish());
+                vscode.commands.executeCommand('git.stageAll');
+            });
         }
 
         await vscode.window.withProgress(

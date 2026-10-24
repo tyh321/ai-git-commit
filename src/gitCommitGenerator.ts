@@ -2,6 +2,12 @@ import * as vscode from 'vscode';
 import * as https from 'https';
 import * as http from 'http';
 
+// 连接复用：同一 IDE 会话内多次生成复用 TLS 连接，省去每次握手（约 100-300ms）
+const agents = {
+    https: new https.Agent({ keepAlive: true, maxSockets: 4 }),
+    http: new http.Agent({ keepAlive: true, maxSockets: 4 })
+};
+
 export interface AIProviderConfig {
     apiKey?: string;
     model: string;
@@ -13,14 +19,20 @@ export class GitCommitGenerator {
 
     /**
      * 获取当前 git diff 内容
+     * repo.diff(true) = git diff --cached（暂存区）；repo.diff(false) = git diff（工作区）
      */
     async getDiff(repo: any): Promise<string> {
         try {
-            const diff = await repo.diff(true);
+            // 按仓库状态只发一次 diff，避免原来「先 --cached 再回退」跑两次 git 子进程
+            const hasStaged = repo.state.indexChanges.length > 0;
+            const diff = await repo.diff(hasStaged);
             if (diff && diff.trim().length > 0) {
                 return diff;
             }
-            return await repo.diff(false);
+            if (hasStaged) {
+                return await repo.diff(false);
+            }
+            return diff;
         } catch {
             throw new Error('无法获取 git diff 信息');
         }
@@ -340,6 +352,7 @@ ${languageInstructions[language] || ''}
             
             const req = client.request({
                 ...options,
+                agent: url.startsWith('https') ? agents.https : agents.http,
                 hostname: parsedUrl.hostname,
                 port: parsedUrl.port || (url.startsWith('https') ? 443 : 80),
                 path: parsedUrl.pathname + parsedUrl.search,
@@ -361,6 +374,11 @@ ${languageInstructions[language] || ''}
 
             req.on('error', (error: Error) => {
                 reject(error);
+            });
+
+            // 30s 无数据视为卡死，避免进度通知永久转圈
+            req.setTimeout(30000, () => {
+                req.destroy(new Error('AI 服务响应超时(30s)'));
             });
 
             // 监听取消事件

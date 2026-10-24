@@ -2,7 +2,7 @@
   "name": "ai-git-commit",
   "displayName": "AI Git Commit",
   "description": "智能生成 Git 提交信息的 VSCode 插件，支持多种 AI 服务",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "ai-git-commit",
   "repository": {
     "type": "git",
